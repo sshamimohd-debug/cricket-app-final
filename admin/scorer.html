@@ -8,82 +8,49 @@
 </head>
 <body data-theme="dark">
   <div class="container">
-
     <div class="card">
-      <div class="row">
+      <div class="row" style="justify-content:space-between; align-items:center">
         <div>
           <div class="h1">Scorer Console</div>
-          <div class="muted small">Real-time Firestore scoring (secured)</div>
+          <div class="muted small" id="who">-</div>
         </div>
-        <div style="display:flex; gap:8px">
-          <a class="chip" href="../#/home">App</a>
-          <button class="chip" id="logout">Logout</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <a class="btn" href="../#/home">App</a>
+          <button class="btn" id="btnLogout" type="button">Logout</button>
         </div>
       </div>
 
       <hr class="sep"/>
 
-      <label class="muted small">Match ID (A1..D6)</label>
+      <label class="muted small">Match ID</label>
       <input class="input" id="matchId" value="A1"/>
 
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn" id="btnLoad" type="button">Load Match</button>
+        <button class="btn" id="btnLive" type="button">Set LIVE</button>
+      </div>
+
+      <hr class="sep"/>
+
+      <div class="h2">Ball Input</div>
       <div class="kpi" style="margin-top:10px">
-        <button class="btn" id="load">Load Match</button>
-        <button class="btn" id="setLive">Set LIVE</button>
+        <button class="btn" data-run="0">0</button>
+        <button class="btn" data-run="1">1</button>
+        <button class="btn" data-run="2">2</button>
+        <button class="btn" data-run="3">3</button>
+        <button class="btn" data-run="4">4</button>
+        <button class="btn" data-run="6">6</button>
+        <button class="btn" id="btnW" type="button">W</button>
+        <button class="btn" id="btnWD" type="button">WD</button>
+        <button class="btn" id="btnNB" type="button">NB</button>
+        <button class="btn primary" id="btnUndo" type="button">Undo</button>
       </div>
 
-      <hr class="sep"/>
-
-      <div class="grid">
-        <div class="card half">
-          <div class="h2">Strike Setup</div>
-          <label class="muted small">Striker</label>
-          <input class="input" id="striker" placeholder="Batter name"/>
-          <div style="height:8px"></div>
-          <label class="muted small">Non-striker</label>
-          <input class="input" id="nonstriker" placeholder="Batter name"/>
-          <div style="height:8px"></div>
-          <label class="muted small">Bowler</label>
-          <input class="input" id="bowler" placeholder="Bowler name"/>
-          <div class="kpi" style="margin-top:10px">
-            <button class="btn primary" id="applyStrike">Apply</button>
-          </div>
-          <div class="muted small" id="strikeMsg" style="margin-top:8px"></div>
-        </div>
-
-        <div class="card half">
-          <div class="h2">Ball Input</div>
-          <div class="kpi">
-            <button class="btn" data-run="0">0</button>
-            <button class="btn" data-run="1">1</button>
-            <button class="btn" data-run="2">2</button>
-            <button class="btn" data-run="3">3</button>
-            <button class="btn" data-run="4">4</button>
-            <button class="btn" data-run="6">6</button>
-            <button class="btn" id="WD">WD</button>
-            <button class="btn" id="NB">NB</button>
-            <button class="btn" id="B1">B1</button>
-            <button class="btn" id="LB1">LB1</button>
-            <button class="btn" id="WKT">W</button>
-            <button class="btn primary" id="UNDO">Undo</button>
-          </div>
-
-          <div style="margin-top:10px">
-            <label class="muted small">Wicket type (LBW not allowed)</label>
-            <input class="input" id="wktType" placeholder="Caught/Bowled/Run Out/Stumped/Hit Wicket..."/>
-          </div>
-        </div>
-      </div>
-
-      <hr class="sep"/>
-      <div id="out"></div>
-      <div class="muted small" id="err" style="margin-top:8px"></div>
+      <div class="muted small" id="msg" style="margin-top:12px"></div>
     </div>
-
   </div>
 
-  <script src="../js/utils.js"></script>
-  <script src="../js/firebase.js"></script>
-  <script src="../js/engine.js"></script>
-  <script src="scorer.js"></script>
+  <script src="../js/firebase.js?v=1"></script>
+  <script src="./scorer.js?v=1"></script>
 </body>
 </html>

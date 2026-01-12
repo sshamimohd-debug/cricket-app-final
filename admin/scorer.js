@@ -1,127 +1,157 @@
 (async function(){
   const $ = (s)=>document.querySelector(s);
-  const out = $("#out");
-  const err = $("#err");
-  const strikeMsg = $("#strikeMsg");
+  const msg = $("#msg");
+  const who = $("#who");
+  const matchIdEl = $("#matchId");
 
-  const FBX = await FB.initFirebase();
-  const { auth, au, getMyRole, db, fs } = FBX;
+  const say = (t)=> msg.textContent = t;
 
-  const matchRef = (id)=> fs.doc(db, "matches", id);
-
-  function mid(){ return ($("#matchId").value||"A1").trim() || "A1"; }
-
-  let unsub = null;
-  let current = null;
-
-  async function guard(){
-    if(!auth.currentUser){
-      location.href = "index.html"; return false;
-    }
-    const role = await getMyRole(auth.currentUser.uid);
-    if(role !== "admin" && role !== "scorer"){
-      err.textContent = "Access denied: role scorer/admin required.";
-      return false;
-    }
-    return true;
+  if(!window.FB){
+    say("Error: firebase.js not loaded.");
+    return;
   }
 
-  $("#logout").addEventListener("click", async ()=>{
+  const FBX = await FB.initFirebase();
+  const { auth, au, fs, db, getMyRole } = FBX;
+
+  // must be logged in
+  if(!auth.currentUser){
+    say("Not logged in. Please login again.");
+    location.href = `index.html?v=${Date.now()}`;
+    return;
+  }
+
+  const uid = auth.currentUser.uid;
+  const role = await getMyRole(uid);
+  who.textContent = `UID: ${uid} • Role: ${role}`;
+
+  if(role !== "admin" && role !== "scorer"){
+    say("Role public है. Firestore users/{UID} में role=admin/scorer करें.");
+    return;
+  }
+
+  $("#btnLogout").addEventListener("click", async ()=>{
     await au.signOut(auth);
-    location.href = "index.html";
+    location.href = `index.html?v=${Date.now()}`;
   });
 
-  $("#load").addEventListener("click", async ()=>{
-    err.textContent = "";
-    if(!await guard()) return;
+  function refMatch(mid){
+    return fs.doc(db, "matches", mid);
+  }
 
-    const id = mid();
-    // Ensure doc exists
-    const snap = await fs.getDoc(matchRef(id));
+  async function ensureMatch(mid){
+    const ref = refMatch(mid);
+    const snap = await fs.getDoc(ref);
     if(!snap.exists()){
-      err.textContent = "Match doc not found. Open public Home once to auto-create, or create manually.";
+      await fs.setDoc(ref, {
+        status:"UPCOMING",
+        currentInnings: 1,
+        innings: {
+          1: { runs:0, wkts:0, balls:0 },
+          2: { runs:0, wkts:0, balls:0 }
+        },
+        lastBalls: [],
+        updatedAt: fs.serverTimestamp(),
+        updatedBy: uid
+      }, { merge:true });
+    }
+    return ref;
+  }
+
+  async function applyEvent(mid, evt){
+    const ref = await ensureMatch(mid);
+    const snap = await fs.getDoc(ref);
+    const d = snap.data() || {};
+    const inn = d.currentInnings || 1;
+    const innObj = (d.innings && d.innings[inn]) ? d.innings[inn] : { runs:0, wkts:0, balls:0 };
+
+    let runs = innObj.runs || 0;
+    let wkts = innObj.wkts || 0;
+    let balls = innObj.balls || 0;
+
+    const lastBalls = Array.isArray(d.lastBalls) ? d.lastBalls.slice() : [];
+
+    if(evt === "UNDO"){
+      lastBalls.pop();
+      await fs.updateDoc(ref, { lastBalls, updatedAt: fs.serverTimestamp(), updatedBy: uid });
       return;
     }
 
-    if(unsub) unsub();
-    unsub = fs.onSnapshot(matchRef(id), (s)=>{
-      if(!s.exists()) return;
-      current = s.data();
-      render();
+    if(evt.startsWith("RUN:")){
+      const v = parseInt(evt.split(":")[1], 10) || 0;
+      runs += v;
+      balls += 1;
+      lastBalls.push(String(v));
+    }else if(evt === "W"){
+      wkts += 1;
+      balls += 1;
+      lastBalls.push("W");
+    }else if(evt === "WD"){
+      runs += 1;
+      lastBalls.push("WD");
+    }else if(evt === "NB"){
+      runs += 1;
+      lastBalls.push("NB");
+    }
+
+    while(lastBalls.length > 24) lastBalls.shift();
+
+    await fs.updateDoc(ref, {
+      status: "LIVE",
+      [`innings.${inn}.runs`]: runs,
+      [`innings.${inn}.wkts`]: wkts,
+      [`innings.${inn}.balls`]: balls,
+      lastBalls,
+      updatedAt: fs.serverTimestamp(),
+      updatedBy: uid
+    });
+  }
+
+  $("#btnLoad").addEventListener("click", async ()=>{
+    const mid = (matchIdEl.value||"").trim();
+    await ensureMatch(mid);
+    say(`Loaded match ${mid}`);
+  });
+
+  $("#btnLive").addEventListener("click", async ()=>{
+    const mid = (matchIdEl.value||"").trim();
+    const ref = await ensureMatch(mid);
+    await fs.updateDoc(ref, { status:"LIVE", updatedAt: fs.serverTimestamp(), updatedBy: uid });
+    say(`Match ${mid} set LIVE`);
+  });
+
+  document.querySelectorAll("[data-run]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const mid = (matchIdEl.value||"").trim();
+      const v = btn.getAttribute("data-run");
+      await applyEvent(mid, `RUN:${v}`);
+      say(`Ball: ${v}`);
     });
   });
 
-  $("#setLive").addEventListener("click", async ()=>{
-    if(!await guard()) return;
-    await fs.updateDoc(matchRef(mid()), { status:"LIVE", updatedAt: fs.serverTimestamp() });
+  $("#btnW").addEventListener("click", async ()=>{
+    const mid = (matchIdEl.value||"").trim();
+    await applyEvent(mid, "W");
+    say("Ball: W");
   });
 
-  $("#applyStrike").addEventListener("click", async ()=>{
-    if(!await guard()) return;
-    if(!current){ strikeMsg.textContent = "Load match first"; return; }
-
-    const striker = ($("#striker").value||"").trim();
-    const non = ($("#nonstriker").value||"").trim();
-    const bowler = ($("#bowler").value||"").trim();
-    if(!striker || !non || !bowler){
-      strikeMsg.textContent = "Striker, Non-striker, Bowler तीनों भरें"; return;
-    }
-    current.strike = { striker, nonStriker: non, bowler };
-    strikeMsg.textContent = "Applied ✅";
-    await fs.updateDoc(matchRef(mid()), { strike: current.strike, updatedAt: fs.serverTimestamp() });
+  $("#btnWD").addEventListener("click", async ()=>{
+    const mid = (matchIdEl.value||"").trim();
+    await applyEvent(mid, "WD");
+    say("Ball: WD");
   });
 
-  function render(){
-    const inn = current.innings?.[current.currentInnings] || {runs:0,wkts:0,legalBalls:0,extras:{}};
-    out.innerHTML = `
-      <div class="h2">${current.meta.teamA} vs ${current.meta.teamB} • Match ${current.meta.id}</div>
-      <div class="kpi">
-        <div class="pill"><b>${inn.runs}/${inn.wkts}</b></div>
-        <div class="pill">Overs <b>${ENG.oversFromBalls(inn.legalBalls)}</b></div>
-        <div class="pill">Innings <b>${current.currentInnings}</b></div>
-        <div class="pill">PP <b>${inn.legalBalls < ENG.PP_OVERS*6 ? "ON" : "OFF"}</b></div>
-      </div>
-      <div class="muted small">Strike: ${U.esc(current.strike?.striker||"-")} / ${U.esc(current.strike?.nonStriker||"-")} • Bowler: ${U.esc(current.strike?.bowler||"-")}</div>
-      <div class="muted small">Extras: WD ${inn.extras?.wd||0}, NB ${inn.extras?.nb||0}, B ${inn.extras?.b||0}, LB ${inn.extras?.lb||0}</div>
-    `;
-  }
-
-  async function pushBall(ball){
-    err.textContent = "";
-    if(!await guard()) return;
-    if(!current){ err.textContent = "Load match first"; return; }
-
-    const res = ENG.applyBall(current, ball);
-    if(!res.ok){ err.textContent = res.err; return; }
-
-    // write back entire state (simple + safe)
-    await fs.setDoc(matchRef(mid()), { ...res.state, updatedAt: fs.serverTimestamp() }, { merge:true });
-  }
-
-  document.querySelectorAll("[data-run]").forEach(b=>{
-    b.addEventListener("click", ()=> pushBall({ kind:"RUN", runs: parseInt(b.getAttribute("data-run"),10) }));
+  $("#btnNB").addEventListener("click", async ()=>{
+    const mid = (matchIdEl.value||"").trim();
+    await applyEvent(mid, "NB");
+    say("Ball: NB");
   });
 
-  $("#WD").addEventListener("click", ()=> pushBall({ kind:"WD", runs:0 }));
-  $("#NB").addEventListener("click", ()=> pushBall({ kind:"NB", runs:0 }));
-  $("#B1").addEventListener("click", ()=> pushBall({ kind:"B", runs:1 }));
-  $("#LB1").addEventListener("click", ()=> pushBall({ kind:"LB", runs:1 }));
-
-  $("#WKT").addEventListener("click", ()=>{
-    const wktType = ($("#wktType").value||"OUT").trim();
-    pushBall({ kind:"WKT", wicketType: wktType });
+  $("#btnUndo").addEventListener("click", async ()=>{
+    const mid = (matchIdEl.value||"").trim();
+    await applyEvent(mid, "UNDO");
+    say("Undo");
   });
 
-  $("#UNDO").addEventListener("click", async ()=>{
-    err.textContent = "";
-    if(!await guard()) return;
-    if(!current){ err.textContent = "Load match first"; return; }
-    const rebuilt = ENG.undo(current);
-    await fs.setDoc(matchRef(mid()), { ...rebuilt, updatedAt: fs.serverTimestamp() }, { merge:true });
-  });
-
-  // Auto guard: if user already logged-in keep here else redirect
-  au.onAuthStateChanged(auth, async (u)=>{
-    if(!u) location.href = "index.html";
-  });
+  say("Ready. Load match and start scoring.");
 })();

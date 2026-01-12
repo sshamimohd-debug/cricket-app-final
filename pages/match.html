@@ -4,80 +4,40 @@
       <div class="h1" id="matchTitle">Match</div>
       <div class="muted small" id="matchMeta">-</div>
     </div>
-
-    <!-- Scorecard link: JS matchId auto set करेगा -->
     <a class="chip" id="btnToScorecard" href="#/scorecard">Scorecard</a>
   </div>
 
   <hr class="sep"/>
 
-  <!-- LIVE SCORE SUMMARY -->
   <div id="liveScore"></div>
 
-  <!-- ROLE BADGE -->
-  <div class="muted small" id="roleHint" style="margin-top:10px; display:none;"></div>
-
-  <!-- SCORING (ADMIN/SCORER ONLY) -->
-  <div id="scoringPanel" style="display:none; margin-top:12px;">
-    <div class="row" style="align-items:center; justify-content:space-between;">
-      <div class="muted small">
-        Scoring Controls (Admin/Scorer only)
-      </div>
-      <button class="chip" id="btnOpenAdmin" type="button">Open Admin</button>
-    </div>
-
-    <div class="kpi" style="margin-top:10px">
-      <button class="btn" data-run="0">0</button>
-      <button class="btn" data-run="1">1</button>
-      <button class="btn" data-run="2">2</button>
-      <button class="btn" data-run="3">3</button>
-      <button class="btn" data-run="4">4</button>
-      <button class="btn" data-run="6">6</button>
-
-      <button class="btn" id="btnW" type="button">W</button>
-      <button class="btn" id="btnWD" type="button">WD</button>
-      <button class="btn" id="btnNB" type="button">NB</button>
-
-      <button class="btn primary" id="btnUndo" type="button">Undo</button>
-    </div>
-
-    <div class="muted small" style="margin-top:10px">
-      Tip: Public view में ये buttons hidden रहेंगे. Scorer/Admin login के बाद ही दिखेंगे।
-    </div>
+  <div class="muted small" style="margin-top:10px">
+    Viewer mode: Live score auto-refresh होता है. Scoring केवल Admin/Scorer console से होगी।
   </div>
 
   <hr class="sep"/>
 
-  <!-- LAST BALLS -->
   <div class="h2">Last balls</div>
   <div id="lastBalls" class="badges" style="margin-top:10px"></div>
 
-  <!-- VIEWER HELP -->
-  <div class="muted small" style="margin-top:12px">
-    Live score auto-refresh होता है. Admin/Scorer login के लिए ऊपर right में <b>Admin</b> button उपयोग करें।
+  <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+    <a class="btn" id="btnOpenAdmin" href="admin/index.html">Admin / Scorer Login</a>
+    <a class="btn" href="#/home">Back</a>
   </div>
 </div>
 
 <script>
-  // MatchId helper (hash routing supported)
-  function getMatchIdFromURL(){
-    const h = location.hash || "";
-    // support: #/match?id=A1 OR #match?id=A1
-    const qIndex = h.indexOf("?");
-    const qs = qIndex >= 0 ? h.slice(qIndex + 1) : "";
-    const usp = new URLSearchParams(qs);
-    return usp.get("id") || usp.get("matchId") || "A1";
-  }
-
-  // Keep scorecard link pinned to same match
   (function(){
-    const mid = getMatchIdFromURL();
+    const h = location.hash || "";
+    const qIndex = h.indexOf("?");
+    const qs = qIndex >= 0 ? h.slice(qIndex+1) : "";
+    const usp = new URLSearchParams(qs);
+    const mid = usp.get("id") || usp.get("matchId") || "A1";
+
     const a = document.getElementById("btnToScorecard");
     if(a) a.href = `#/scorecard?id=${encodeURIComponent(mid)}`;
 
-    const btn = document.getElementById("btnOpenAdmin");
-    if(btn) btn.addEventListener("click", ()=> {
-      location.href = `admin/index.html?v=${Date.now()}`;
-    });
+    const adm = document.getElementById("btnOpenAdmin");
+    if(adm) adm.href = `admin/index.html?v=${Date.now()}`;
   })();
 </script>
