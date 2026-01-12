@@ -1,0 +1,111 @@
+{
+  "tournament": {
+    "name": "MPGB Premier League",
+    "season": "2025-26",
+    "dates": {
+      "commencement_mentioned_in_iom": "2026-01-10",
+      "league_match_dates_revised": ["2026-01-24", "2026-01-25"],
+      "knockouts_dates": "TBA"
+    }
+  },
+  "format": {
+    "innings_overs": 10,
+    "powerplay_overs": 3,
+    "max_overs_per_bowler": 2,
+    "ball_type": "SIXIT tennis ball (Yellow)",
+    "squad_size_total": 15,
+    "playing_xi": 11,
+    "reserves": 4
+  },
+  "rules": {
+    "lbw_applicable": false,
+    "throw_bowling_prohibited": true,
+    "umpire_no_ball_authority_for_throw": true,
+    "standard_cricket_rules_otherwise": true,
+    "umpire_decision_final": true,
+    "tie_break": { "method": "Super Over", "repeat_until_result": true },
+    "substitution": {
+      "allowed_for_injury": false,
+      "allowed_if_player_absent": true,
+      "requires_umpire_permission": true,
+      "requires_opponent_captain_consent": true,
+      "final_decision": "Umpire"
+    }
+  },
+  "venues": [
+    { "id": "indore", "name": "Indore", "group": "A" },
+    { "id": "dhar", "name": "Dhar", "group": "B" },
+    { "id": "jabalpur", "name": "Jabalpur", "group": "C" },
+    { "id": "gwalior", "name": "Gwalior", "group": "D" }
+  ],
+  "groups": [
+    {
+      "id": "A",
+      "venue": "indore",
+      "teams": ["Bhopal", "Dewas", "Head Office", "Narmadapuram", "Sehore"]
+    },
+    {
+      "id": "B",
+      "venue": "dhar",
+      "teams": ["Dhar", "Jhabua", "Khargone", "Mandsaur", "Ujjain"]
+    },
+    {
+      "id": "C",
+      "venue": "jabalpur",
+      "teams": ["Chhindwara", "Jabalpur", "Mandla", "Rewa", "Shahdol", "Sidhi"]
+    },
+    {
+      "id": "D",
+      "venue": "gwalior",
+      "teams": ["Chhatarpur", "Damoh", "Gwalior", "Satna", "Shivpuri", "Tikamgarh"]
+    }
+  ],
+  "qualification": {
+    "group_stage_matches_per_team": 2,
+    "group_winner_qualifies": true,
+    "tie_for_group_top": {
+      "method": "Decider Match",
+      "notes": "If top two teams have equal points, play deciding match; winner qualifies."
+    }
+  },
+  "knockouts": {
+    "semi_final_1": { "a": "Group A Winner", "b": "Group C Winner" },
+    "semi_final_2": { "a": "Group B Winner", "b": "Group D Winner" },
+    "final": { "a": "Winner SF1", "b": "Winner SF2" }
+  },
+  "awards": [
+    { "code": "MOM", "name": "Man of the Match" },
+    { "code": "SIXER_KING", "name": "Sixer King Award" },
+    { "code": "BEST_BOWLER", "name": "Best Bowler Award" }
+  ],
+  "schedule": {
+    "time_slots": ["09:00", "10:15", "11:30", "12:45", "14:00", "15:15"],
+    "matches": [
+      { "id": "A1", "group": "A", "teamA": "Sehore", "teamB": "Dewas", "time": "09:00" },
+      { "id": "A2", "group": "A", "teamA": "Narmadapuram", "teamB": "Head Office", "time": "10:15" },
+      { "id": "A3", "group": "A", "teamA": "Dewas", "teamB": "Bhopal", "time": "11:30" },
+      { "id": "A4", "group": "A", "teamA": "Head Office", "teamB": "Sehore", "time": "12:45" },
+      { "id": "A5", "group": "A", "teamA": "Bhopal", "teamB": "Narmadapuram", "time": "14:00" },
+
+      { "id": "B1", "group": "B", "teamA": "Ujjain", "teamB": "Mandsaur", "time": "09:00" },
+      { "id": "B2", "group": "B", "teamA": "Khargone", "teamB": "Dhar", "time": "10:15" },
+      { "id": "B3", "group": "B", "teamA": "Jhabua", "teamB": "Ujjain", "time": "11:30" },
+      { "id": "B4", "group": "B", "teamA": "Mandsaur", "teamB": "Khargone", "time": "12:45" },
+      { "id": "B5", "group": "B", "teamA": "Dhar", "teamB": "Jhabua", "time": "14:00" },
+
+      { "id": "C1", "group": "C", "teamA": "Rewa", "teamB": "Shahdol", "time": "09:00" },
+      { "id": "C2", "group": "C", "teamA": "Chhindwara", "teamB": "Mandla", "time": "10:15" },
+      { "id": "C3", "group": "C", "teamA": "Shahdol", "teamB": "Sidhi", "time": "11:30" },
+      { "id": "C4", "group": "C", "teamA": "Mandla", "teamB": "Jabalpur", "time": "12:45" },
+      { "id": "C5", "group": "C", "teamA": "Sidhi", "teamB": "Rewa", "time": "14:00" },
+      { "id": "C6", "group": "C", "teamA": "Jabalpur", "teamB": "Chhindwara", "time": "15:15" },
+
+      { "id": "D1", "group": "D", "teamA": "Tikamgarh", "teamB": "Gwalior", "time": "09:00" },
+      { "id": "D2", "group": "D", "teamA": "Damoh", "teamB": "Satna", "time": "10:15" },
+      { "id": "D3", "group": "D", "teamA": "Gwalior", "teamB": "Shivpuri", "time": "11:30" },
+      { "id": "D4", "group": "D", "teamA": "Satna", "teamB": "Chhatarpur", "time": "12:45" },
+      { "id": "D5", "group": "D", "teamA": "Shivpuri", "teamB": "Tikamgarh", "time": "14:00" },
+      { "id": "D6", "group": "D", "teamA": "Chhatarpur", "teamB": "Damoh", "time": "15:15" }
+    ]
+  }
+}
