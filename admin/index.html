@@ -10,8 +10,26 @@
   <div class="container">
     <div class="card">
       <div class="h1">Admin / Scorer Login</div>
-      <div class="muted small">Firebase Email/Password Auth</div>
+      <div class="muted small">Firebase Login (recommended) या Local PIN (demo fallback)</div>
       <hr class="sep"/>
+
+      <div class="card" style="padding:12px; background:rgba(255,255,255,0.04)">
+        <div class="h2">Local PIN Login (Fallback)</div>
+        <div class="muted small">Offline/demo use के लिए. <b>Live scoring</b> के लिए Firebase login + Firestore roles जरूरी हैं.</div>
+        <div style="height:10px"></div>
+        <label class="muted small">PIN</label>
+        <input class="input" id="pin" type="password" placeholder="Enter PIN" inputmode="numeric"/>
+
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn" id="btnPinLogin" type="button">PIN Login</button>
+          <button class="btn" id="btnSetPin" type="button">Set / Change PIN</button>
+          <button class="btn" id="btnClearPin" type="button">Clear PIN</button>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="h2">Firebase Email/Password Login</div>
 
       <label class="muted small">Email</label>
       <input class="input" id="email" placeholder="email@example.com"/>
@@ -22,7 +40,7 @@
       <input class="input" id="pass" type="password" placeholder="password"/>
 
       <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
-        <button class="btn primary" id="btnLogin" type="button">Login</button>
+        <button class="btn primary" id="btnLogin" type="button">Firebase Login</button>
         <a class="btn" href="../#/home">Back to App</a>
       </div>
 
@@ -30,19 +48,8 @@
     </div>
   </div>
 
+  <script src="../js/utils.js?v=1"></script>
   <script src="../js/firebase.js?v=1"></script>
   <script src="./admin.js?v=1"></script>
-
-<script>
-(function(){
-  if(!('serviceWorker' in navigator)) return;
-  const swUrl = './sw.js?v=3';
-  navigator.serviceWorker.register(swUrl).then(async (reg)=>{
-    try{ await reg.update(); }catch(e){}
-    if(reg.waiting) reg.waiting.postMessage("SKIP_WAITING");
-  }).catch(()=>{});
-})();
-</script>
-
 </body>
 </html>

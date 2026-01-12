@@ -1,89 +1,43 @@
-// MPGB PL Service Worker (network-first for HTML/JS/CSS to avoid stale deployments)
-const CACHE_VERSION = "mpl-cache-v3";
-const PRECACHE = [
+const CACHE = "mpl-cache-v2";
+const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./css/theme.css",
-  "./css/theme-dark.css",
-  "./js/app.js",
+  "./js/utils.js",
   "./js/router.js",
   "./js/ui.js",
-  "./js/utils.js",
-  "./js/firebase.js",
-  "./admin/index.html",
-  "./admin/scorer.html",
-  "./admin/admin.js",
-  "./admin/scorer.js",
+  "./js/data-seed.js",
+  "./js/app.js",
+  "./data/tournament.json",
   "./pages/home.html",
   "./pages/match.html",
   "./pages/scorecard.html",
   "./pages/points.html",
   "./pages/teams.html",
   "./pages/knockouts.html",
-  "./pages/rules.html",
-  "./data/tournament.json"
+  "./pages/rules.html"
 ];
 
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(PRECACHE)).catch(()=>{})
+self.addEventListener("install", (e)=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+});
+
+self.addEventListener("activate", (e)=>{
+  e.waitUntil(
+    caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE?caches.delete(k):null)))
   );
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil((async ()=>{
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => k !== CACHE_VERSION ? caches.delete(k) : Promise.resolve()));
-    await self.clients.claim();
-  })());
-});
-
-async function networkFirst(request){
-  try{
-    const fresh = await fetch(request, { cache: "no-store" });
-    const cache = await caches.open(CACHE_VERSION);
-    cache.put(request, fresh.clone()).catch(()=>{});
-    return fresh;
-  }catch(e){
-    const cached = await caches.match(request);
-    if(cached) return cached;
-    throw e;
-  }
-}
-
-async function cacheFirst(request){
-  const cached = await caches.match(request);
-  if(cached) return cached;
-  const fresh = await fetch(request);
-  const cache = await caches.open(CACHE_VERSION);
-  cache.put(request, fresh.clone()).catch(()=>{});
-  return fresh;
-}
-
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
-
-  // Only handle same-origin
-  if(url.origin !== location.origin) return;
-
-  // Network-first for navigations and core assets (prevents stale JS/HTML)
-  if(req.mode === "navigate" ||
-     req.destination === "document" ||
-     req.destination === "script" ||
-     req.destination === "style"){
-    event.respondWith(networkFirst(req));
-    return;
-  }
-
-  // Cache-first for others (icons/images)
-  event.respondWith(cacheFirst(req));
-});
-
-self.addEventListener("message", (event)=>{
-  if(event.data === "SKIP_WAITING"){
-    self.skipWaiting();
-  }
+self.addEventListener("fetch", (e)=>{
+  const req = e.request;
+  e.respondWith(
+    caches.match(req).then(cached=>{
+      return cached || fetch(req).then(res=>{
+        const copy = res.clone();
+        caches.open(CACHE).then(cache=>cache.put(req, copy)).catch(()=>{});
+        return res;
+      }).catch(()=>cached);
+    })
+  );
 });

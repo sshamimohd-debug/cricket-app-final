@@ -15,5 +15,27 @@
     return `${o}.${b}`;
   }
 
-  window.U = { esc, uid, readJSON, writeJSON, fmtOvers };
+  // --- Local session (PIN fallback / demo) ---
+  const SESSION_KEY = "mpl_session";
+  function getSession(){
+    const s = readJSON(SESSION_KEY, null);
+    if(!s) return null;
+    if(s.exp && Date.now() > s.exp){
+      try{ localStorage.removeItem(SESSION_KEY); }catch{}
+      return null;
+    }
+    return s;
+  }
+  function getSessionRole(){
+    return getSession()?.role || null;
+  }
+  function setSession(role, hours=12){
+    const exp = Date.now() + hours*60*60*1000;
+    writeJSON(SESSION_KEY, { role, exp });
+  }
+  function clearSession(){
+    try{ localStorage.removeItem(SESSION_KEY); }catch{}
+  }
+
+  window.U = { esc, uid, readJSON, writeJSON, fmtOvers, getSessionRole, setSession, clearSession };
 })();

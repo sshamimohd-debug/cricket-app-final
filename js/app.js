@@ -90,12 +90,20 @@
 
   async function resolveRole(){
     const fb = await ensureFirebase();
-    const { auth, au, getMyRole } = fb;
+    const { auth, getMyRole, demo } = fb;
+
+    // Local PIN fallback session (mainly for demo / offline use)
+    const localRole = (window.U && typeof U.getSessionRole === "function") ? U.getSessionRole() : null;
+    if(localRole && (localRole === "admin" || localRole === "scorer")){
+      APP.role = localRole;
+      APP.uid = "local";
+      return APP.role;
+    }
 
     // wait one tick for auth to settle (GitHub Pages + CDN)
     await new Promise(r=> setTimeout(r, 50));
 
-    if(auth.currentUser){
+    if(auth && auth.currentUser){
       APP.uid = auth.currentUser.uid;
       APP.role = await getMyRole(APP.uid);
       return APP.role;

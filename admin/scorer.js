@@ -3,16 +3,42 @@
   const msg = $("#msg");
   const who = $("#who");
   const matchIdEl = $("#matchId");
+  const kpi = document.querySelector(".kpi");
+  if(kpi) kpi.style.display = "none";
 
   const say = (t)=> msg.textContent = t;
 
+  // utils for local session
+  const localRole = (window.U && typeof U.getSessionRole === "function") ? U.getSessionRole() : null;
+
   if(!window.FB){
-    say("Error: firebase.js not loaded.");
+    // No Firebase script: allow only local session (if any)
+    if(localRole === "admin" || localRole === "scorer"){
+      who.textContent = `LOCAL SESSION • Role: ${localRole}`;
+      if(kpi) kpi.style.display = "flex";
+      say("Local demo scorer ready (no realtime sync).");
+      return;
+    }
+    say("Not logged in. Please login again.");
+    location.href = `index.html?v=${Date.now()}`;
     return;
   }
 
   const FBX = await FB.initFirebase();
-  const { auth, au, fs, db, getMyRole } = FBX;
+  const { auth, au, fs, db, getMyRole, demo } = FBX;
+
+  // If Firebase is in demo, allow local session only
+  if(demo){
+    if(localRole === "admin" || localRole === "scorer"){
+      who.textContent = `LOCAL SESSION • Role: ${localRole}`;
+      if(kpi) kpi.style.display = "flex";
+      say("Local demo scorer ready (no realtime sync).");
+      return;
+    }
+    say("Firebase not configured. Please login via PIN (local) or configure Firebase.");
+    location.href = `index.html?v=${Date.now()}`;
+    return;
+  }
 
   // must be logged in
   if(!auth.currentUser){
@@ -29,6 +55,8 @@
     say("Role public है. Firestore users/{UID} में role=admin/scorer करें.");
     return;
   }
+
+  if(kpi) kpi.style.display = "flex";
 
   $("#btnLogout").addEventListener("click", async ()=>{
     await au.signOut(auth);
