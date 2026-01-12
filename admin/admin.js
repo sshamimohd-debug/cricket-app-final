@@ -22,7 +22,7 @@
 
       const role = await getMyRole(uid);
       if(role !== "admin" && role !== "scorer"){
-        msg.textContent = "Login ok, लेकिन role public है. Admin से role 'scorer' या 'admin' कराएँ.";
+        msg.textContent = "Login ok, लेकिन role public है. Firestore में role 'admin' या 'scorer' कर दें.";
         return;
       }
 
