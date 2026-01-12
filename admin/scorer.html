@@ -8,43 +8,82 @@
 </head>
 <body data-theme="dark">
   <div class="container">
+
     <div class="card">
       <div class="row">
         <div>
-          <div class="h1">Scorer Console (Demo)</div>
-          <div class="muted small">Select matchId and score (LocalStorage).</div>
+          <div class="h1">Scorer Console</div>
+          <div class="muted small">Real-time Firestore scoring (secured)</div>
         </div>
         <div style="display:flex; gap:8px">
-          <a class="chip" href="../#/home">Open App</a>
+          <a class="chip" href="../#/home">App</a>
           <button class="chip" id="logout">Logout</button>
         </div>
       </div>
 
       <hr class="sep"/>
 
-      <label class="muted small">Match ID</label>
-      <input class="input" id="matchId" value="A1" />
+      <label class="muted small">Match ID (A1..D6)</label>
+      <input class="input" id="matchId" value="A1"/>
 
-      <div class="kpi">
-        <button class="btn" data-run="0">0</button>
-        <button class="btn" data-run="1">1</button>
-        <button class="btn" data-run="2">2</button>
-        <button class="btn" data-run="3">3</button>
-        <button class="btn" data-run="4">4</button>
-        <button class="btn" data-run="6">6</button>
-        <button class="btn" id="W">W</button>
-        <button class="btn" id="WD">WD</button>
-        <button class="btn" id="NB">NB</button>
-        <button class="btn primary" id="UNDO">Undo</button>
+      <div class="kpi" style="margin-top:10px">
+        <button class="btn" id="load">Load Match</button>
+        <button class="btn" id="setLive">Set LIVE</button>
+      </div>
+
+      <hr class="sep"/>
+
+      <div class="grid">
+        <div class="card half">
+          <div class="h2">Strike Setup</div>
+          <label class="muted small">Striker</label>
+          <input class="input" id="striker" placeholder="Batter name"/>
+          <div style="height:8px"></div>
+          <label class="muted small">Non-striker</label>
+          <input class="input" id="nonstriker" placeholder="Batter name"/>
+          <div style="height:8px"></div>
+          <label class="muted small">Bowler</label>
+          <input class="input" id="bowler" placeholder="Bowler name"/>
+          <div class="kpi" style="margin-top:10px">
+            <button class="btn primary" id="applyStrike">Apply</button>
+          </div>
+          <div class="muted small" id="strikeMsg" style="margin-top:8px"></div>
+        </div>
+
+        <div class="card half">
+          <div class="h2">Ball Input</div>
+          <div class="kpi">
+            <button class="btn" data-run="0">0</button>
+            <button class="btn" data-run="1">1</button>
+            <button class="btn" data-run="2">2</button>
+            <button class="btn" data-run="3">3</button>
+            <button class="btn" data-run="4">4</button>
+            <button class="btn" data-run="6">6</button>
+            <button class="btn" id="WD">WD</button>
+            <button class="btn" id="NB">NB</button>
+            <button class="btn" id="B1">B1</button>
+            <button class="btn" id="LB1">LB1</button>
+            <button class="btn" id="WKT">W</button>
+            <button class="btn primary" id="UNDO">Undo</button>
+          </div>
+
+          <div style="margin-top:10px">
+            <label class="muted small">Wicket type (LBW not allowed)</label>
+            <input class="input" id="wktType" placeholder="Caught/Bowled/Run Out/Stumped/Hit Wicket..."/>
+          </div>
+        </div>
       </div>
 
       <hr class="sep"/>
       <div id="out"></div>
+      <div class="muted small" id="err" style="margin-top:8px"></div>
     </div>
+
   </div>
 
   <script src="../js/utils.js"></script>
-  <script src="../js/data-seed.js"></script>
+  <script src="../js/firebase.js"></script>
+  <script src="../js/engine.js"></script>
   <script src="scorer.js"></script>
 </body>
 </html>
