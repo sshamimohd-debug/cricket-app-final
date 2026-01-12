@@ -32,5 +32,17 @@
 
   <script src="../js/firebase.js?v=1"></script>
   <script src="./admin.js?v=1"></script>
+
+<script>
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  const swUrl = './sw.js?v=3';
+  navigator.serviceWorker.register(swUrl).then(async (reg)=>{
+    try{ await reg.update(); }catch(e){}
+    if(reg.waiting) reg.waiting.postMessage("SKIP_WAITING");
+  }).catch(()=>{});
+})();
+</script>
+
 </body>
 </html>
